@@ -15,7 +15,7 @@ public class ItemDefinition {
         weight = weightIfBase;
 
         // This may be helpful for the compsite pattern to find the appropriate item definitions
-        ItemDictionary dict = ItemDictionary.get();
+        //ItemDictionary dict = ItemDictionary.get();
 
     }
 
@@ -26,13 +26,25 @@ public class ItemDefinition {
      */
     public Item create() {
         Item item = new Item(this);
-        // An ItemDefinition for a craftable item might follow a similar pattern
-        // to how a craftable/composite item looks.
         return item;
     }
 
-    // ItemDefinition might "craft" and return an item, using items from some source inventory.
-    // You might use the Milestone 1 Basket transaction code as a guide
+    // create a crafted item from this definition + inherit the base items as
+    // item interfaces
+    public CraftedItem createCrafted() {
+        ItemInterface[] items = returnBaseItems();
+        CraftedItem item = new CraftedItem(this, items);
+        return item;
+    }
+
+    // this 
+    public ItemInterface[] returnBaseItems() {
+        ItemInterface[] baseItems = new Item[componentNames.length];
+        for (int i = 0; i < componentNames.length; i++) {
+            baseItems[i] = ItemDictionary.get().defByName(componentNames[i]).orElse(null).create();
+        }
+        return baseItems;
+    }
 
     public String getName() {
         return name;

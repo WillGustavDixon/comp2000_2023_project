@@ -3,16 +3,23 @@ import java.util.Optional;
 
 public class Inventory {
     private ArrayList<ItemInterface> stock;
-    private String searchBy;
+    public enum searchTypes {
+        ALL,
+        NAME,
+        DESC,
+        WGHTASC,
+        WGHTDESC
+    }
+    private searchTypes searchBy;
 
     public Inventory() {
         stock = new ArrayList<>();
-        searchBy = "All";
+        searchBy = searchTypes.ALL;
     }
 
     public Inventory(ArrayList<ItemInterface> startingStock) {
         stock = startingStock;
-        searchBy = "All";
+        searchBy = searchTypes.ALL;
     }
 
     /**
@@ -71,8 +78,8 @@ public class Inventory {
         return Optional.empty();
     }
 
-    public void setSearch(String search) {
-        // You may wish to adjust this to facilitate the task 1 strategy pattern
+    public void setSearch(searchTypes search) {
+        // changed to use the enum search criteria
         searchBy = search;
     }
 
@@ -82,35 +89,81 @@ public class Inventory {
      * lost when removed from the resulting ArrayList.
      * @param searchTerm - Text from the UIs textfield
      * @return a filtered instance copy of the items arraylist
+     * 
+     * Modified to use an enumerator to store all the different search
+     * criteria. App.java has been modified accordingly.
      */
     public ArrayList<ItemInterface> searchItems(String searchTerm) {
         String term = searchTerm.toLowerCase();
         ArrayList<ItemInterface> result = new ArrayList<>(stock);  // ArrayList copy
-
-        if (searchBy.equals("All")) {
-            for (int i = 0; i < result.size(); i++) {
-                ItemInterface curItem = result.get(i);
-                if (!curItem.getName().contains(term) && !curItem.getDescription().contains(term)) {
-                    result.remove(i);
-                    i--;  // Go back to revisit current index on next run of loop
+        switch (searchBy) { // select which method to sort with based on the enumerator
+            case ALL:
+                for (int i = 0; i < result.size(); i++) {
+                    ItemInterface curItem = result.get(i);
+                    if (!curItem.getName().contains(term) && !curItem.getDescription().contains(term)) {
+                        result.remove(i);
+                        i--;  // Go back to revisit current index on next run of loop
+                    }
                 }
-            }
-        } else if (searchBy.equals("Name")) {
-            for (int i = 0; i < result.size(); i++) {
-                ItemInterface curItem = result.get(i);
-                if (!curItem.getName().contains(term)) {
-                    result.remove(i);
-                    i--;  // Go back to revisit current index on next run of loop
+                break;
+            case NAME:
+                for (int i = 0; i < result.size(); i++) {
+                    ItemInterface curItem = result.get(i);
+                    if (!curItem.getName().contains(term)) {
+                        result.remove(i);
+                        i--;  // Go back to revisit current index on next run of loop
+                    }
                 }
-            }
-        } else if (searchBy.equals("Description")) {
-            for (int i = 0; i < result.size(); i++) {
-                ItemInterface curItem = result.get(i);
-                if (!curItem.getDescription().contains(term)) {
-                    result.remove(i);
-                    i--;  // Go back to revisit current index on next run of loop
+                break;
+            case DESC:
+                for (int i = 0; i < result.size(); i++) {
+                    ItemInterface curItem = result.get(i);
+                    if (!curItem.getDescription().contains(term)) {
+                        result.remove(i);
+                        i--;  // Go back to revisit current index on next run of loop
+                    }
                 }
-            }
+                break;
+            case WGHTASC:
+                if (!term.isEmpty()) { // if its not just an empty string or spaces
+                    double wght = 0;
+                    try { // try and get the weight from the term
+                        wght = Double.parseDouble(term); 
+                    }  // if it doesn't work display no results
+                    catch (NumberFormatException e) {
+                        result.clear();
+                        break;
+                    }
+                    for (int i = 0; i < result.size(); i++) {
+                        ItemInterface curItem = result.get(i);
+                        if (curItem.getWeight() < wght) {
+                            result.remove(i); // remove the item if its less than the specified weight
+                            i--;  
+                        }
+                    }
+                }
+                break;
+            case WGHTDESC:
+                if (!term.isEmpty()) { 
+                    double wght = 0;
+                    try {
+                        wght = Double.parseDouble(term);
+                    } // this is all the same as before
+                    catch (NumberFormatException e) {
+                        result.clear();
+                        break;
+                    }
+                    for (int i = 0; i < result.size(); i++) {
+                        ItemInterface curItem = result.get(i);
+                        if (curItem.getWeight() >= wght) {
+                            result.remove(i); // remove if its greater than or equal to the given weight
+                            i--;  
+                        }
+                    }
+                }
+                break;
+            default:
+                break; // if no enum selected (impossible) do nothing
         }
         return result;
     }

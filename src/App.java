@@ -9,7 +9,8 @@ public class App {
     public App(Player p, Storage s) {
         player = p;
         storage = s;
-        player.setStorageView(storage.getInventory());
+        storage.addPlayer(p);
+        storage.setStorage();
 
         manager = new PageManager(player, storage);
 
@@ -34,26 +35,36 @@ public class App {
     // Task 1: Defining what each button in the UI will do.
     void setupSearching(InventoryPage page) {
         page.addSearchByButton(new SearchByButton("All", () -> {
-            player.getInventory().setSearch("All");
-            player.getStorageView().setSearch("All");
+            player.getInventory().setSearch(Inventory.searchTypes.ALL);
+            player.getStorageView().setSearch(Inventory.searchTypes.ALL);
         }));
 
         page.addSearchByButton(new SearchByButton("Name", () -> {
-            player.getInventory().setSearch("Name");
-            player.getStorageView().setSearch("Name");
+            player.getInventory().setSearch(Inventory.searchTypes.NAME);
+            player.getStorageView().setSearch(Inventory.searchTypes.NAME);
         }));
 
         page.addSearchByButton(new SearchByButton("Description", () -> {
-            player.getInventory().setSearch("Description");
-            player.getStorageView().setSearch("Description");
+            player.getInventory().setSearch(Inventory.searchTypes.DESC);
+            player.getStorageView().setSearch(Inventory.searchTypes.DESC);
+        }));
+
+        page.addSearchByButton(new SearchByButton("Weight (Greater than/equal to)", () -> {
+            player.getInventory().setSearch(Inventory.searchTypes.WGHTASC);
+            player.getStorageView().setSearch(Inventory.searchTypes.WGHTASC);
+        }));
+
+        page.addSearchByButton(new SearchByButton("Weight (Less than)", () -> {
+            player.getInventory().setSearch(Inventory.searchTypes.WGHTDESC);
+            player.getStorageView().setSearch(Inventory.searchTypes.WGHTDESC);
         }));
     }
 
     void setupCrafting(ItemCraftPage page, Player player) {
-        page.setCraftAction((def) -> System.out.println("Crafting not implemented"));
+        page.setCraftAction((def) -> player.craftItem(def));
     }
 
     void setupUncrafting(ProductPage page, Player player) {
-        page.setUncraftAction((item) -> System.out.println("Uncrafting not implemented"));
+        page.setUncraftAction((item) -> player.uncraftItem(item));
     }
 }
